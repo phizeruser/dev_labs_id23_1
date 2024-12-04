@@ -1,8 +1,8 @@
 {
-    "min_drops": 500,
-    "max_drops": 1000,
-    "min_speed": 100,
-    "max_speed": 500.0,
+    "min_drops": 100,
+    "max_drops": 500,
+    "min_speed": 300,
+    "max_speed": 700.0,
     "min_angle": -10.0,
     "max_angle": 10.0,
     "min_length": 5,
