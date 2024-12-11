@@ -1,0 +1,103 @@
+import tkinter as tk
+from tkinter import ttk
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+class CandleBurningSimulator:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Candle Burning Simulation")
+
+        self.candle_height = 10.0
+        self.burn_rate = 0.1
+        self.flame_intensity = 1.0
+
+        self.is_animating = False
+
+        self.height_slider = ttk.Scale(root, from_=1, to=20, orient='horizontal', command=self.update_candle_height)
+        self.height_slider.set(self.candle_height)
+        self.height_slider.pack(pady=5)
+
+        self.burn_speed_slider = ttk.Scale(root, from_=0.01, to=1, orient='horizontal', command=self.update_burn_speed)
+        self.burn_speed_slider.set(self.burn_rate)
+        self.burn_speed_slider.pack(pady=5)
+
+        self.flame_intensity_box = ttk.Spinbox(root, from_=0.1, to=5.0, increment=0.1,
+                                               command=self.update_flame_intensity)
+        self.flame_intensity_box.set(self.flame_intensity)
+        self.flame_intensity_box.pack(pady=5)
+
+        self.start_button = ttk.Button(root, text="Start Animation", command=self.start_animation)
+        self.start_button.pack(pady=5)
+
+        self.reset_button = ttk.Button(root, text="Reset Height", command=self.reset_candle)
+        self.reset_button.pack(pady=5)
+
+        self.figure, self.axis = plt.subplots()
+        self.candle_patch = plt.Rectangle((0.4, 0), 0.2, self.candle_height, color='orange')
+        self.axis.add_patch(self.candle_patch)
+
+        plt.xlim(0, 1)
+        plt.ylim(0, 20)
+        plt.axis('off')
+
+    def update_candle_height(self, value):
+        self.candle_height = float(value)
+        if not self.is_animating:
+            self.candle_patch.set_height(self.candle_height)
+            self.figure.canvas.draw()
+
+    def update_burn_speed(self, value):
+        self.burn_rate = float(value)
+
+    def update_flame_intensity(self):
+        self.flame_intensity = float(self.flame_intensity_box.get())
+
+    def reset_candle(self):
+        self.candle_height = 10.0
+        self.height_slider.set(self.candle_height)
+        if not self.is_animating:
+            self.candle_patch.set_height(self.candle_height)
+            self.figure.canvas.draw()
+
+    def start_animation(self):
+        if not self.is_animating:
+            self.is_animating = True
+            self.animate_candle()
+
+    def animate_candle(self):
+        if not self.is_animating:
+            return
+
+        if self.candle_height > 0:
+            self.candle_height -= self.burn_rate
+            if self.candle_height < 0:
+                self.candle_height = 0
+
+            self.candle_patch.set_height(self.candle_height)
+
+            flame_y_positions = (self.candle_height +
+                                 np.sin(np.linspace(0, 2 * np.pi, 100)) * (self.flame_intensity / 2))
+            flame_x_positions = np.full_like(flame_y_positions, 0.5)
+
+            self.axis.clear()
+            self.axis.add_patch(self.candle_patch)
+            plt.plot(flame_x_positions, flame_y_positions, color='red', lw=2)  # Пламя
+
+            plt.xlim(0, 1)
+            plt.ylim(0, 20)
+            plt.axis('off')
+
+            self.figure.canvas.draw()
+            self.root.after(100, self.animate_candle)
+        else:
+            self.is_animating = False
+
+
+if __name__ == "__main__":
+    root_window = tk.Tk()
+    candle_simulator_app = CandleBurningSimulator(root_window)
+    plt.ion()
+    plt.show()
+    root_window.mainloop()
